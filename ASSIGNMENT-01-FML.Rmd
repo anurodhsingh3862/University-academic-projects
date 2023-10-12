@@ -1,0 +1,73 @@
+---
+title: "FML-ASSIGNMENT-01"
+author: "ANURODH-SINGH"
+date: "2023-09-27"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+data <- read.csv("C:/Users/ASUS/Desktop/FML/ASSIGNMENTS/71 Centuries of Virat Kohli.csv")
+data
+```
+
+```{r}
+summary(data)
+```
+```{r}
+mean(data$Inn.)
+```
+```{r}
+median(data$Score)
+```
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages("modeest")
+library(modeest)
+mlv(data$Inn.)
+```
+```{r}
+sum(data$Batting.Order)
+```
+```{r}
+sd(data$Batting.Order)
+
+```
+```{r}
+var(data$Batting.Order)
+```
+```{r}
+max(data$Score)
+```
+```{r}
+min(data$Score)
+```
+```{r}
+str(data$Score)
+#Step3: Descriptive Statistics for Categorical Variables
+
+```
+```{r}
+table(data$Column1)
+```
+```{r}
+str(data)
+```
+#Transforming the variables
+
+```{r}
+log(data$Score)
+```
+```{r}
+data3 <- data$Batting.Order- mean(data$Inn.)
+data3
+```
+#plotting the variable
+```{r}
+hist(data$Score,col= "red",main = "PRESENTAION HISTOGRAM of runs scored")
+```
+```{r}
+plot(data$Score,data$Inn.,main = "Plot", col="blue")
+```
+
