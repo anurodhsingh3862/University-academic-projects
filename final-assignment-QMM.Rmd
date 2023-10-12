@@ -1,0 +1,145 @@
+---
+title: "open"
+author: "ANURODH-SINGH"
+date: "2023-09-27"
+output:
+  html_document:
+---
+
+
+```{r}
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+install.packages("lpSolveAPI")
+library(lpSolveAPI)
+```
+
+Problem Statement: A renowned chocolatier, Francesco Schröeder, makes three kinds of chocolate confectionery: artisanal truffles, handcrafted chocolate nuggets, and premium gourmet chocolate bars. He uses the highest quality of cacao butter, dairy cream, and honey as the main ingredients. Francesco makes his chocolates each morning, and they are usually sold out by the early afternoon. For a pound of artisanal truffles, Francesco uses 1 cup of cacao butter, 1 cup of honey, and 1/2 cup of cream. The handcrafted nuggets are milk chocolate and take 1/2 cup of cacao, 2/3 cup of honey, and 2/3 cup of cream for each pound. Each pound of the chocolate bars uses 1 cup of cacao butter, 1/2 cup of honey, and 1/2 cup of cream. One pound of truffles, nuggets, and chocolate bars can be purchased for $35, $25, and $20, respectively. A local store places a daily order of 10 pounds of chocolate nuggets, which means that Francesco needs to make at least 10 pounds of the chocolate nuggets each day. Before sunrise each day, Francesco receives a delivery of 50 cups of cacao butter, 50 cups of honey, and 30 cups of dairy cream. 1) Formulate and solve the LP model that maximizes revenue given the constraints. How much of each chocolate product should Francesco make each morning? What is the maximum daily revenue that he can make? 2) Report the shadow price and the range of feasibility of each binding constraint. 3) If the local store increases the daily order to 25 pounds of chocolate nuggets, how much of each product should Francesco make? We will solve this problem with two approaches: First by directly encoding the variables and coefficients and secondly, by using a .lp file *1.Formulate and solve the LP model that maximizes revenue given the constraints. How much of each chocolate product should Francesco make each morning? What is the maximum daily revenue that he can make? We define for Decision Variables: Let P pounds of Artisanal Truffles, and Q pounds of handcrafted Chocolate nuggets, R pounds of premium gourmet Chocolate bars.
+
+Objective Maximization = 35P + 25Q + 20R
+The following constraints
+Cacao butter: 1x1 + 1/2x2 + 1x3 <= 50;
+Honey: 1x1 + 2/3x2 + 1/2x3 <= 50;
+Cream: 1/2x1 + 2/3x2 + 1/2x3 <= 30;
+Chocolate nuggets: x2>= 10; x1,x3>=0 (Non negativity)
+
+
+```{r}
+# Create lp object with 0 constraints and 3 decision variables
+lprec <- make.lp(0, 3)
+# Now create the objective function.
+set.objfn(lprec, c(35, 25, 20))
+# As the default is a minimization problem, so we change that to maximization
+lp.control(lprec,sense='max')
+
+```
+
+Now Adding the all the 4 constraint values in the model
+
+```{r}
+# Adding four constraints
+add.constraint(lprec, c(1, 1/2, 1), "<=", 50)
+add.constraint(lprec, c(1, 2/3, 1/2), "<=", 50)
+add.constraint(lprec, c(1/2, 2/3, 1/2), "<=", 30)
+add.constraint(lprec, c(0, 1, 0), ">=", 10)
+
+# Set bounds for variables.
+set.bounds(lprec, lower = c(0, 0, 0), columns = c(1, 2, 3))
+
+# To identify the variables and constraints, we can set variable names and name the constraints
+RowNames <- c("CacaoButter", "Honey", "DiaryCream", "NUggetsOrder")
+ColNames <- c("AritisanTruffel", "ChocalateNuggets", "ChocalateBars")
+
+dimnames(lprec) <- list(RowNames, ColNames)
+lprec #Printing the model
+
+```
+To save the model
+```{r}
+write.lp(lprec, filename = "lpmodel.lp", type = "lp")
+solve(lprec) #Solving the above problem 
+
+```
+```{r}
+get.objective(lprec)
+
+```
+```{r}
+varV <- get.variables(lprec)
+```
+
+Using the LP problem, we created a text file using write.lp statement. Using the read.lp statement, we can take a look at the lpmodel.lp file.
+
+```{r}
+x <- read.lp("lpmodel.lp")
+x 
+
+```
+```{r}
+solve(x)
+```
+```{r}
+get.objective(x)    
+get.variables(x)
+get.constraints(x)  
+
+```
+According to the solution, the revenue is 1780. The first variable value is 40, and the second variable value is 12 and the third variable value is 4.
+To get shadow price and reduced cost
+```{r}
+get.sensitivity.rhs(lprec) 
+get.sensitivity.obj(lprec) 
+```
+3.If the local store increases the daily order to 25 pounds of chocolate nuggets, how much of each product should Francesco make?
+
+```{r}
+lprec1 <- make.lp(0, 3)             
+set.objfn(lprec1, c(35, 25, 20))    
+lp.control(lprec1,sense='max') 
+
+```
+using the new constraints now,
+
+```{r}
+add.constraint(lprec1, c(1, 1/2, 1), "<=", 50)
+add.constraint(lprec1, c(1, 2/3, 1/2), "<=", 50)
+add.constraint(lprec1, c(1/2, 2/3, 1/2), "<=", 30)
+add.constraint(lprec1, c(0, 1, 0), ">=", 25)
+
+```
+```{r}
+set.bounds(lprec1, lower = c(0, 0, 0), columns = c(1, 2, 3))
+```
+
+```{r}
+RowNames <- c("CacaoButter", "Honey", "DiaryCream", "NUggetsOrder")
+ColNames <- c("AritisanTruffel", "ChocalateNuggets", "ChocalateBars")
+
+dimnames(lprec1) <- list(RowNames, ColNames)
+lprec1
+```
+```{r}
+write.lp(lprec1, filename = "chocalte.lp", type = "lp")
+
+solve(lprec1)
+```
+```{r}
+get.objective(lprec1)
+```
+```{r}
+x <- read.lp("lpmodel.lp")
+x
+```
+```{r}
+solve(lprec1)
+```
+```{r}
+get.objective(lprec1)
+```
+```{r}
+get.variables(lprec1) 
+```
+```{r}
+get.constraints(lprec1)
+```
+
+
